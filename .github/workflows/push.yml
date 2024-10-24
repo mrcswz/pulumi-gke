@@ -15,7 +15,6 @@ jobs:
         uses: actions/setup-node@v3.5.0
         with:
           node-version: lts/*
-          cache: yarn
 
       - name: Authenticate with Google
         uses: google-github-actions/setup-gcloud@v0
