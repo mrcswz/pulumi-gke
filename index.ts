@@ -51,6 +51,10 @@ const serviceAccountConfigs: UseCaseConfig[] = [
     useCaseId: 'simulation',
     roles: ['roles/pubsub.admin'],
   },
+  {
+    useCaseId: 'migration',
+    roles: ['roles/storage.admin'],
+  },
   // ... more service account configurations ...
 ];
 
