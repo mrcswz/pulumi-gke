@@ -14,7 +14,8 @@ jobs:
       - name: Setup Node LTS
         uses: actions/setup-node@v3.5.0
         with:
-          node-version-file: package.json
+          node-version: lts/*
+          cache: yarn
 
       - name: Authenticate with Google
         uses: google-github-actions/setup-gcloud@v0
