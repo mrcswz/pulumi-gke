@@ -17,12 +17,16 @@ jobs:
           node-version: lts/*
 
       - name: Authenticate with Google
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2.0.0
         with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ env.PROJECT_ID }}
           install_components: 'gke-gcloud-auth-plugin'
-          export_default_credentials: true
+
       - run: npm install
       - uses: pulumi/actions@v4
         with:
