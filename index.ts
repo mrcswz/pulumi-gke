@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
+import * as command from "@pulumi/command";
 import { GoogleServiceAccounts, UseCaseConfig } from './gke-setup/gke-setup';
 
 const cluster = new gcp.container.Cluster("my-gke-cluster", {
@@ -10,6 +11,16 @@ const cluster = new gcp.container.Cluster("my-gke-cluster", {
   },
   deletionProtection: false,
 });
+
+const PublicDNSEndpoint = command.exec(
+  `
+  gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access \\ 
+  --quiet && gcloud container clusters describe ${cluster.name} --location=${cluster.location} \\
+  --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
+  `
+);
+
+console.log(PublicDNSEndpoint)
 
 // Generate the kubeconfig for the created cluster
 export const kubeconfig = pulumi.all([cluster.name, cluster.endpoint, cluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
