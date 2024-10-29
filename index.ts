@@ -1,6 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
-import * as command from "@pulumi/command";
+import { local } from "@pulumi/command";
 import { GoogleServiceAccounts, UseCaseConfig } from './gke-setup/gke-setup';
 
 const cluster = new gcp.container.Cluster("my-gke-cluster", {
@@ -12,13 +12,14 @@ const cluster = new gcp.container.Cluster("my-gke-cluster", {
   deletionProtection: false,
 });
 
-const PublicDNSEndpoint = command.exec(
+const PublicDNSEndpoint = new local.command("public-dns-endpoint", {
+  create: 
   `
   gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access \\ 
   --quiet && gcloud container clusters describe ${cluster.name} --location=${cluster.location} \\
   --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
   `
-);
+});
 
 console.log(PublicDNSEndpoint)
 
