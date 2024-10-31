@@ -55,8 +55,11 @@ const dnsEndpointInfo = dnsEndpointStatus.apply(isEnabled => {
   }
 });
 
+let dnsEndpointOutput: pulumi.Output<string>; 
+
 dnsEndpointInfo.apply(endpoint => {
   console.log(`DNS Endpoint: ${endpoint}`); 
+  dnsEndpointOutput = pulumi.output(endpoint);
   // ... use the endpoint for further operations ...
 });
 
@@ -101,7 +104,7 @@ const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
 console.log(PublicDNSEndpoint)*/
 
 // Generate the kubeconfig for the created cluster
-export const kubeconfig = pulumi.all([cluster.name, DnsEndpoint.stdout, cluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
+export const kubeconfig = pulumi.all([cluster.name, dnsEndpointOutput, cluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
   const context = `${gcp.config.project}_${gcp.config.zone}_${name}`;
   return `
 apiVersion: v1
