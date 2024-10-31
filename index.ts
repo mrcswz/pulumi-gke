@@ -27,6 +27,7 @@ checkDnsEndpointCommand.stdout.apply(stdout => {
     console.log("============== DNS endpoint will be enabled now.");
     const enableDnsEndpoint = new command.local.Command('enable-dns-endpoint', {
       create: pulumi.interpolate`
+      sleep 10 && \\
       gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access --no-user-output-enabled
       `
     });
