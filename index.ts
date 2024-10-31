@@ -19,8 +19,49 @@ const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", 
   triggers: [new Date().toISOString()],
 });
 
-// Check config
+const dnsEndpointStatus = checkDnsEndpointCommand.stdout.apply(stdout => {
+  console.info(`Output from checkDnsEndpoint: ${stdout}`);
+  return stdout === "True"; // Return true if enabled, false otherwise
+});
 
+const dnsEndpointInfo = dnsEndpointStatus.apply(isEnabled => {
+  if (!isEnabled) {
+    // Enable DNS access if not already enabled
+    console.log("============== DNS endpoint will be enabled now.");
+    const enableDnsEndpoint = new command.local.Command('enable-dns-endpoint', {
+      create: pulumi.interpolate`
+      gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access --no-user-output-enabled
+      `
+    }, { dependsOn: [checkDnsEndpointCommand] });
+
+    // Return the endpoint after enabling
+    return enableDnsEndpoint.stdout.apply(() => {
+      const getDnsEndpoint = new command.local.Command('get-dns-endpoint', {
+        create: pulumi.interpolate`
+        gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
+        `
+      }, { dependsOn: [enableDnsEndpoint] });
+      return getDnsEndpoint.stdout; // Return the endpoint
+    });
+  } else {
+    // DNS endpoint is already enabled
+    console.log("============== DNS endpoint is already enabled.");
+    const getDnsEndpoint = new command.local.Command('get-dns-endpoint', {
+      create: pulumi.interpolate`
+      gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
+      `
+    });
+    return getDnsEndpoint.stdout; // Return the endpoint
+  }
+});
+
+dnsEndpointInfo.apply(endpoint => {
+  console.log(`DNS Endpoint: ${endpoint}`); 
+  // ... use the endpoint for further operations ...
+});
+
+// Check config
+/*
 const dnsEndpointEnabled = checkDnsEndpointCommand.stdout.apply(stdout => {
   console.info(`Output from checkDnsEndpoint: ${stdout}`)
   if (stdout === "False") {
@@ -33,22 +74,19 @@ const dnsEndpointEnabled = checkDnsEndpointCommand.stdout.apply(stdout => {
       }, { dependsOn: [checkDnsEndpointCommand] });
       enableDnsEndpoint.stdout.apply(() => resolve());
     });
-    
   } else {
     console.log("============== DNS endpoint is already enabled.");
     return Promise.resolve();
   }
 });
 
-const dnsEndpointEnabledResource = pulumi.all([dnsEndpointEnabled]).apply(([resource]) => resource ? resource : cluster.id);
-
 const DnsEndpoint = new command.local.Command("dnsendpoint", {
   create: pulumi.interpolate`
   gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
   `
 },
-{ dependsOn: [dnsEndpointEnabledResource] })
-
+{ dependsOn: [dnsEndpointEnabled] })
+*/
 /*console.info("Output from the command: ", checkDnsEndpointCommand.stdout);
 
 /*
