@@ -40,7 +40,7 @@ const dnsEndpointEnabled = checkDnsEndpointCommand.stdout.apply(stdout => {
   }
 });
 
-const dnsEndpointEnabledResource = dnsEndpointEnabled ? dnsEndpointEnabled : cluster;
+const dnsEndpointEnabledResource = pulumi.all([dnsEndpointEnabled]).apply(([resource]) => resource || cluster);
 
 const DnsEndpoint = new command.local.Command("dnsendpoint", {
   create: pulumi.interpolate`
