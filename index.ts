@@ -21,13 +21,12 @@ const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", 
 
 // Check config
 
-checkDnsEndpointCommand.stdout.apply(stdout => {
+const dnsEndpointEnabled = checkDnsEndpointCommand.stdout.apply(stdout => {
   console.info(`Output from checkDnsEndpoint: ${stdout}`)
   if (stdout === "False") {
     console.log("============== DNS endpoint will be enabled now.");
     const enableDnsEndpoint = new command.local.Command('enable-dns-endpoint', {
       create: pulumi.interpolate`
-      sleep 10 && \\
       gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access --no-user-output-enabled
       `
     });
@@ -35,6 +34,13 @@ checkDnsEndpointCommand.stdout.apply(stdout => {
     console.log("============== DNS endpoint is already enabled.");
   }
 });
+
+const DnsEndpoint = new command.local.Command("dnsendpoint", {
+  create: pulumi.interpolate`
+  gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
+  `
+},
+{ dependsOn: [dnsEndpointEnabled] })
 
 /*console.info("Output from the command: ", checkDnsEndpointCommand.stdout);
 
@@ -50,7 +56,7 @@ const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
 console.log(PublicDNSEndpoint)*/
 
 // Generate the kubeconfig for the created cluster
-export const kubeconfig = pulumi.all([cluster.name, cluster.endpoint, cluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
+export const kubeconfig = pulumi.all([cluster.name, DnsEndpoint.stdout, cluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
   const context = `${gcp.config.project}_${gcp.config.zone}_${name}`;
   return `
 apiVersion: v1
