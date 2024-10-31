@@ -68,7 +68,7 @@ const kubeconfig =dnsEndpointInfo.apply(endpoint => {
   apiVersion: v1
   clusters:
   - cluster:
-      certificate-authority-data: ${masterAuth.clusterCaCertificate}
+      insecure-skip-tls-verify: true
       server: https://${endpoint}
     name: ${context}
   contexts:
