@@ -19,7 +19,21 @@ const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", 
   triggers: [new Date().toISOString()],
 });
 
-console.info("Output from the command: ", checkDnsEndpointCommand.stdout);
+checkDnsEndpointCommand.stdout.apply(stdout => {
+  console.info(`Output from checkDnsEndpoint: ${stdout}`)
+  if (stdout === "False") {
+    console.log("============== DNS endpoint will be enabled now.");
+    const enableDnsEndpoint = new command.local.Command('enable-dns-endpoint', {
+      create: pulumi.interpolate`
+      gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access --no-user-output-enabled
+      `
+    });
+  } else {
+    console.log("============== DNS endpoint is already enabled.");
+  }
+});
+
+/*console.info("Output from the command: ", checkDnsEndpointCommand.stdout);
 
 /*
 const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
