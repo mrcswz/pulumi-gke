@@ -40,12 +40,16 @@ const dnsEndpointEnabled = checkDnsEndpointCommand.stdout.apply(stdout => {
   }
 });
 
+const dnsEndpointEnabledResource = new pulumi.CustomResource("dns-endpoint-enabled", {}, {
+  dependsOn: [dnsEndpointEnabled], // Wait for the Promise to resolve
+});
+
 const DnsEndpoint = new command.local.Command("dnsendpoint", {
   create: pulumi.interpolate`
   gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
   `
 },
-{ dependsOn: [dnsEndpointEnabled] })
+{ dependsOn: [dnsEndpointEnabledResource] })
 
 /*console.info("Output from the command: ", checkDnsEndpointCommand.stdout);
 
