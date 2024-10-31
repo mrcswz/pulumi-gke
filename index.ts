@@ -11,7 +11,7 @@ const cluster = new gcp.container.Cluster("my-gke-cluster", {
   },
   deletionProtection: false,
 });
-
+//add comment
 const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", {
   create: pulumi.interpolate`
   gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.allowExternalTraffic)"
