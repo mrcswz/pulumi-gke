@@ -15,7 +15,8 @@ const cluster = new gcp.container.Cluster("my-gke-cluster", {
 const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
   create: pulumi.interpolate`
   gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access \\ 
-  --quiet && gcloud container clusters describe ${cluster.name} --location=${cluster.location} \\
+  --no-user-output-enabled \\
+  && gcloud container clusters describe ${cluster.name} --location=${cluster.location} \\
   --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.endpoint)"
   `
 });
