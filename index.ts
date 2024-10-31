@@ -18,7 +18,7 @@ const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", 
   `
 });
 
-console.info(checkDnsEndpointCommand.stdout);
+console.info("Output from the command: ", checkDnsEndpointCommand.stdout);
 
 /*
 const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
