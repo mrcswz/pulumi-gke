@@ -19,6 +19,8 @@ const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", 
   triggers: [new Date().toISOString()],
 });
 
+// Check config
+
 checkDnsEndpointCommand.stdout.apply(stdout => {
   console.info(`Output from checkDnsEndpoint: ${stdout}`)
   if (stdout === "False") {
