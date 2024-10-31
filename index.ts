@@ -12,6 +12,15 @@ const cluster = new gcp.container.Cluster("my-gke-cluster", {
   deletionProtection: false,
 });
 
+const checkDnsEndpointCommand = new command.local.Command("check-dns-endpoint", {
+  create: pulumi.interpolate`
+  gcloud container clusters describe ${cluster.name} --location=${cluster.location} --format="value(controlPlaneEndpointsConfig.dnsEndpointConfig.allowExternalTraffic)"
+  `
+});
+
+console.info(checkDnsEndpointCommand.stdout);
+
+/*
 const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
   create: pulumi.interpolate`
   gcloud container clusters update ${cluster.name} --location=${cluster.location} --enable-dns-access --no-user-output-enabled \\
@@ -20,7 +29,7 @@ const PublicDNSEndpoint = new command.local.Command("public-dns-endpoint", {
   `
 });
 
-/*console.log(PublicDNSEndpoint)*/
+console.log(PublicDNSEndpoint)*/
 
 // Generate the kubeconfig for the created cluster
 export const kubeconfig = pulumi.all([cluster.name, cluster.endpoint, cluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
